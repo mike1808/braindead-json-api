@@ -1,7 +1,5 @@
 const fs = require('fs-promise');
 const path = require('path');
-const config = require('./config');
-
 
 const JSON_EXT = '.json';
 
@@ -27,9 +25,9 @@ function normalizePath(p) {
     return p;
 }
 
-async function serveJson(reqPath) {
+async function serveJson(apiFolder, reqPath) {
     try {
-        const p = path.join(config.apiFolder, normalizePath(reqPath) + JSON_EXT);
+        const p = path.join(apiFolder, normalizePath(reqPath) + JSON_EXT);
         const json = await fs.readFile(p);
         return JSON.parse(json);
     }
@@ -38,14 +36,16 @@ async function serveJson(reqPath) {
     }
 }
 
-exports.middleware = async function (ctx, next) {
-    if (ctx.path.indexOf(config.apiPrefix) !== 0) {
-        throw new NotFountError();
+exports.createMiddleware = function (apiPrefix, apiFolder) {
+    return async function (ctx, next) {
+        if (ctx.path.indexOf(apiPrefix) !== 0) {
+            throw new NotFountError();
+        }
+
+        const p = ctx.path.slice(apiPrefix.length);
+
+        ctx.body = await serveJson(apiFolder, p);
     }
-
-    const p = ctx.path.slice(config.apiPrefix.length);
-
-    ctx.body = await serveJson(p);
 };
 
 exports.errorHandler = async function (ctx, next) {

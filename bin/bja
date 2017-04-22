@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+
+const program = require('commander');
+const packageJson = require('../package.json');
+const bja = require('../src');
+
+program
+    .version(packageJson.version)
+    .description('Braindead Json Api')
+    .usage('[options] <dir>')
+    .option('-p, --port [port]', 'Port to listen', 3000, parseInt)
+    .option('-a, --ip [ip]', 'IP address to listen', '127.0.0.1')
+    .option('-P, --prefix [prefix]', 'Prefix for api', '/')
+    .parse(process.argv);
+
+bja({ ip: program.ip, port: program.port, apiFolder: program.args[0], apiPrefix: program.prefix });
