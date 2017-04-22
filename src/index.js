@@ -1,6 +1,7 @@
 const http = require('http');
 const Koa = require('koa');
 const favicon = require('koa-favicon');
+const cors = require('kcors');
 
 const folderApi = require('./folder-api');
 
@@ -8,6 +9,7 @@ module.exports = function ({ ip, port, apiPrefix, apiFolder }) {
     const app = new Koa();
 
     app.use(favicon(__dirname + '/public/js.png'));
+    app.use(cors());
     app.use(folderApi.errorHandler);
     app.use(folderApi.createMiddleware(apiPrefix, apiFolder));
 

@@ -1,6 +1,6 @@
 {
   "name": "braindead-json-api",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -15,6 +15,7 @@
   "dependencies": {
     "commander": "^2.9.0",
     "fs-promise": "^2.0.2",
+    "kcors": "^2.2.1",
     "koa": "^2.2.0",
     "koa-favicon": "^2.0.0"
   },
