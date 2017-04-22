@@ -41,8 +41,8 @@ dir
 
 With the default config you will have following endpoints:
 
-`GET /cats`
-`GET /cats/53`
+- `GET /cats` - will return the content of `<dir>/cats.json`
+- `GET /cats/53` - will return the content of `<dir>/cats/53.json`
 
 
 ### Disclaimer
