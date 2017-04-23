@@ -1,6 +1,6 @@
 {
   "name": "braindead-json-api",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -17,12 +17,20 @@
     "fs-promise": "^2.0.2",
     "kcors": "^2.2.1",
     "koa": "^2.2.0",
-    "koa-favicon": "^2.0.0"
+    "koa-body": "^2.0.0",
+    "koa-favicon": "^2.0.0",
+    "koa-logger": "^2.0.1"
   },
   "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/mike1808/braindead-json-api"
   },
-  "keywords": ["json", "cli", "server", "serve", "json serve"]
+  "keywords": [
+    "json",
+    "cli",
+    "server",
+    "serve",
+    "json serve"
+  ]
 }

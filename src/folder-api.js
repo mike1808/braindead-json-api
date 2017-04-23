@@ -1,5 +1,6 @@
 const fs = require('fs-promise');
 const path = require('path');
+const STATUS_CODES =  require('http').STATUS_CODES;
 
 const JSON_EXT = '.json';
 
@@ -11,8 +12,14 @@ class HTTPError extends Error {
 }
 
 class NotFountError extends HTTPError {
-    constructor(message = 'Not Found') {
+    constructor(message = STATUS_CODES[401]) {
         super(404, message);
+    }
+}
+
+class NotImpelemtedError extends HTTPError {
+    constructor(message = STATUS_CODES[501]) {
+        super(501, message);
     }
 }
 
@@ -25,26 +32,63 @@ function normalizePath(p) {
     return p;
 }
 
-async function serveJson(apiFolder, reqPath) {
+function getJsonPath(apiFolder, reqPath) {
+    return path.join(apiFolder, normalizePath(reqPath) + JSON_EXT);
+}
+
+async function parseJsonIfExists(jsonPath) {
+    let json;
     try {
-        const p = path.join(apiFolder, normalizePath(reqPath) + JSON_EXT);
-        const json = await fs.readFile(p);
-        return JSON.parse(json);
+        json = await fs.readFile(jsonPath);
     }
     catch (ex) {
         throw new NotFountError();
     }
+
+    return JSON.parse(json);
 }
 
-exports.createMiddleware = function (apiPrefix, apiFolder) {
+async function update(object, jsonPath, update) {
+    const updated = Object.assign(object, update);
+    await fs.writeFile(jsonPath, JSON.stringify(updated, ' ', 2));
+    return update;
+}
+
+async function replace(object, jsonPath, update) {
+    await fs.writeFile(jsonPath, JSON.stringify(update, ' ', 2));
+    return update;
+}
+
+async function identity(arg) {
+    return arg;
+}
+
+const methodsToFunctions = {
+    GET: identity,
+    PATCH: update,
+    PUT: replace,
+};
+
+exports.createMiddleware = function (apiPrefix, apiFolder, { updateMethod, replaceMethod }) {
+    methodsToFunctions[updateMethod] = update;
+    methodsToFunctions[replaceMethod] = replace;
+
     return async function (ctx, next) {
         if (ctx.path.indexOf(apiPrefix) !== 0) {
             throw new NotFountError();
         }
 
         const p = ctx.path.slice(apiPrefix.length);
+        const jsonPath = getJsonPath(apiFolder, p);
 
-        ctx.body = await serveJson(apiFolder, p);
+        const json = await parseJsonIfExists(jsonPath);
+        const func = methodsToFunctions[ctx.method.toUpperCase()];
+
+        if (!func) {
+            throw new NotImpelemtedError();
+        }
+
+        ctx.body = await func(json, jsonPath, ctx.request.body);
     }
 };
 
@@ -52,6 +96,7 @@ exports.errorHandler = async function (ctx, next) {
     try {
         await next();
     } catch (err) {
+        console.error(err);
         ctx.status = err.statusCode || err.status || 500;
         ctx.body = {
             message: err.message
