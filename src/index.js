@@ -5,9 +5,9 @@ const cors = require('kcors');
 const body = require('koa-body');
 const logger = require('koa-logger');
 
-const folderApi = require('./folder-api');
+const api = require('./api');
 
-module.exports = function ({ ip, port, apiPrefix, apiFolder, updateMethod, replaceMethod, log }) {
+module.exports = function ({ ip, port, apiPrefix, apiFolder, updateMethod, replaceMethod, log, routes }) {
     const app = new Koa();
 
     app.use(favicon(__dirname + '/public/js.png'));
@@ -18,8 +18,8 @@ module.exports = function ({ ip, port, apiPrefix, apiFolder, updateMethod, repla
 
     app.use(cors());
     app.use(body());
-    app.use(folderApi.errorHandler);
-    app.use(folderApi.createMiddleware(apiPrefix, apiFolder, { updateMethod, replaceMethod }));
+    app.use(api.errorHandler);
+    app.use(api.createMiddleware(apiPrefix, apiFolder, { updateMethod, replaceMethod }, routes));
 
     http.createServer(app.callback()).listen(3000).listen(ip, port, (err) => {
         if (err) console.log(`Cannot start server on ${ip}:${port}`);

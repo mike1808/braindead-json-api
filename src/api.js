@@ -1,6 +1,6 @@
 const fs = require('fs-promise');
 const path = require('path');
-const STATUS_CODES =  require('http').STATUS_CODES;
+const STATUS_CODES = require('http').STATUS_CODES;
 
 const JSON_EXT = '.json';
 
@@ -69,7 +69,11 @@ const methodsToFunctions = {
     PUT: replace,
 };
 
-exports.createMiddleware = function (apiPrefix, apiFolder, { updateMethod, replaceMethod }) {
+function matchRoute(path, method, routes) {
+    return routes.find(route => route.route === path && route.method === method);
+}
+
+exports.createMiddleware = function (apiPrefix, apiFolder, { updateMethod, replaceMethod }, routes = []) {
     methodsToFunctions[updateMethod] = update;
     methodsToFunctions[replaceMethod] = replace;
 
@@ -79,6 +83,16 @@ exports.createMiddleware = function (apiPrefix, apiFolder, { updateMethod, repla
         }
 
         const p = ctx.path.slice(apiPrefix.length);
+
+        const route = matchRoute(p, ctx.method.toUpperCase(), routes);
+
+        if (route) {
+            const jsonPath = getJsonPath(apiFolder, route.response);
+            ctx.body = await parseJsonIfExists(jsonPath);
+            ctx.statusCode = route.statusCode || 200;
+            return;
+        }
+
         const jsonPath = getJsonPath(apiFolder, p);
 
         const json = await parseJsonIfExists(jsonPath);

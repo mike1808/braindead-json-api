@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const program = require('commander');
+const path = require('path');
 const packageJson = require('../package.json');
 const bja = require('../src');
 
@@ -14,8 +15,13 @@ program
     .option('-l, --log', 'Log HTTP requests')
     .option('--update-method [updateMethod]', 'HTTP method for partial update', 'PATCH')
     .option('--replace-method [replaceMethod]', 'HTTP method for replace', 'PUT')
+    .option('-R, --routes [routes]', 'Custom HTTP routes')
     .parse(process.argv);
 
+let routes;
+if (program.routes) {
+    routes = require(path.resolve(program.routes));
+}
 
 bja({
     ip: program.ip, port: program.port,
@@ -23,4 +29,5 @@ bja({
     updateMethod: program.updateMethod,
     replaceMethod: program.replaceMethod,
     log: program.log,
+    routes,
 });
