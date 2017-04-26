@@ -51,7 +51,7 @@ async function parseJsonIfExists(jsonPath) {
 async function update(object, jsonPath, update) {
     const updated = Object.assign(object, update);
     await fs.writeFile(jsonPath, JSON.stringify(updated, ' ', 2));
-    return update;
+    return updated;
 }
 
 async function replace(object, jsonPath, update) {
